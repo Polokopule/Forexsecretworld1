@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forex Secret World - Phases</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+<script src="firebase.js"></script>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="container">
+      <div class="navbar">
+        <div class="logo">
+          <img src="logo2.png" width="155px">
+        </div>
+        <nav>
+          <ul id="MenuItems">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="dashboard.html">Back</a></li>
+          </ul>
+        </nav>
+        <img src="menue.png" class="menue-icon" onclick="menutoggle()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Balance Section -->
+  <div class="balance-summary">
+    <h3>Account Summary</h3>
+    <p><strong>Balance:</strong> $0.00</p>
+    <p><strong>Withdrawable Profit:</strong> $0.00</p>
+    <p><strong>Company Profit:</strong> $0.00</p>
+    <p><strong>Total Profit:</strong> $0.00</p>
+    <p><strong>Days:</strong> 0</p>
+  </div>
+
+  <div class="startEnd-buttons">
+    <button type="button" class="startEnd-btn start">START</button>
+    <button type="button" class="startEnd-btn end">End</button>
+  </div>
+   
+  <!-- Phases Table -->
+  <div class="table-wrapper">
+    <div class="table-container">
+      <table class="account-table">
+        <thead>
+          <tr>
+            <th>Phases</th>
+            <th>Balance Target</th>
+            <th>Days</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Phase 1</td><td>$750</td><td>7</td><td>🔒 Locked</td></tr>
+          <tr><td>Phase 2</td><td>$1000</td><td>12</td><td>🔒 Locked</td></tr>
+          <tr><td>Phase 3</td><td>$1500</td><td>17</td><td>🔒 Locked</td></tr>
+          <tr><td>Phase 4</td><td>$3000</td><td>19</td><td>🔒 Locked</td></tr>
+          <tr><td>Phase 5</td><td>$5000</td><td>22</td><td>🔒 Locked</td></tr>
+          <tr><td>Phase 6</td><td>$7000</td><td>24</td><td>🔒 Locked</td></tr>
+          <tr><td>Phase 7</td><td>$9000</td><td>29</td><td>🔒 Locked</td></tr>
+          <tr><td>Phase 8</td><td>$10000</td><td>30</td><td>🔒 Locked</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="footer-col-1">
+          <img src="logo2.png"> 
+        </div>
+        <div class="footer-col-2">
+          <p>Our purpose is to make sure that some traders, those who are lucky become successful.</p> 
+        </div>
+      </div>
+    </div>
+    <hr>
+    <p class="copyright">Copyright 1988-2025 : Forex secret world</p>
+  </div>
+
+  <!-- JS -->
+  <script>
+    var MenuItems = document.getElementById("MenuItems");
+    var menuBtn = document.querySelector(".menue-icon");
+
+    // Initially collapse menu
+    MenuItems.style.maxHeight = "0px";
+
+    // Toggle menu on button click
+    function menutoggle() {
+      if (MenuItems.style.maxHeight === "0px") {
+        MenuItems.style.maxHeight = MenuItems.scrollHeight + "px"; 
+      } else {
+        MenuItems.style.maxHeight = "0px";
+      }
+    }
+
+    // Close menu if user clicks outside
+    document.addEventListener("click", function(event) {
+      if (!MenuItems.contains(event.target) && !menuBtn.contains(event.target)) {
+        MenuItems.style.maxHeight = "0px";
+      }
+    });
+  </script>
+
+<!-- fetched trading account data --------------------------------------------------------------------------------------------------------->
+<script type="module">
+
+// --- DOM Elements ---
+var balanceSummaryEls = document.querySelectorAll(".balance-summary p");
+var balanceEl = balanceSummaryEls[0];
+var withdrawableEl = balanceSummaryEls[1];
+var companyEl = balanceSummaryEls[2];
+var totalEl = balanceSummaryEls[3];
+var daysEl = balanceSummaryEls[4];
+var startBtn = document.querySelector(".startEnd-btn.start");
+var tableRows = document.querySelectorAll(".account-table tbody tr");
+
+// --- Phase Table Defaults Storage ---
+var defaultBalances = [];
+document.addEventListener("DOMContentLoaded", function() {
+  var rows = document.querySelectorAll(".account-table tbody tr");
+  rows.forEach(function(row) {
+    var balanceCell = row.cells[1];
+    var balanceText = balanceCell.textContent.replace(/[^0-9]/g, "");
+    defaultBalances.push(parseInt(balanceText, 10));
+  });
+});
+
+// --- Firebase Helpers ---
+function parseGmtOffset(gmtString) {
+  var match = gmtString.match(/GMT([+-]\d+)/);
+  return match ? parseInt(match[1], 10) : 0;
+}
+
+function calculateDaysTaken(startTime, gmtOffset) {
+  if (!startTime || startTime === "0") return 0;
+
+  var parts = startTime.split(/[- :]/);
+  var startDate = new Date(Date.UTC(
+    parseInt(parts[0]),
+    parseInt(parts[1]) - 1,
+    parseInt(parts[2]),
+    parseInt(parts[3]) - gmtOffset,
+    parseInt(parts[4]),
+    parseInt(parts[5])
+  ));
+
+  var nowUTC = new Date();
+  var diffMs = nowUTC.getTime() - startDate.getTime();
+  return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+}
+
+// --- Fetch node helper for v8 ---
+function fetchNode(path, callback) {
+  firebase.database().ref(path).once('value', function(snapshot) {
+    callback(snapshot.exists() ? snapshot.val() : null);
+  }, function(err) {
+    console.error('Firebase fetch error', err);
+    callback(null);
+  });
+}
+
+// --- Auth listener ---
+firebase.auth().onAuthStateChanged(function(user) {
+  if (!user) return;
+
+  var uid = user.uid;
+
+  // --- Load uid2 ---
+  fetchNode('users/' + uid + '/uid2', function(uid2) {
+    if (!uid2) return;
+
+    // --- Load userData ---
+    fetchNode('users/' + uid2, function(userData) {
+      if (!userData) return;
+
+      // --- Load app version and timezone ---
+      fetchNode('appVersionAndTimeZone', function(appVersionData) {
+        var gmtOffset = parseGmtOffset(appVersionData && appVersionData.timeZone ? appVersionData.timeZone : "GMT+0");
+
+        // 🔹 Balance summary
+        var balance = parseFloat(userData.balance || 0);
+        balanceEl.innerHTML = "<strong>Balance:</strong> $" + balance.toFixed(2);
+        var withdrawable = Math.max(0, (balance - 500) / 2);
+        var company = Math.max(0, (balance - 500) / 2);
+        var total = Math.max(0, (balance - 500));
+        withdrawableEl.innerHTML = "<strong>Withdrawable Profit:</strong> $" + withdrawable.toFixed(2);
+        companyEl.innerHTML = "<strong>Company Profit:</strong> $" + company.toFixed(2);
+        totalEl.innerHTML = "<strong>Total Profit:</strong> $" + total.toFixed(2);
+
+        // 🔹 Days calculation
+        var daysTaken = calculateDaysTaken(userData.startTime, gmtOffset);
+        daysEl.innerHTML = "<strong>Days:</strong> " + daysTaken;
+
+        // 🔹 Update Start button
+        if (startBtn) {
+          startBtn.textContent = (userData.startTime && userData.startTime !== "0") ? "Started" : "Start";
+          startBtn.onclick = function() {
+            if (userData.appFee !== "Paid") {
+              alert("❌ Please pay the software fee first.");
+              return;
+            }
+            var startTime = new Date();
+            startTime.setUTCHours(startTime.getUTCHours() + gmtOffset);
+            var y = startTime.getUTCFullYear();
+            var m = String(startTime.getUTCMonth() + 1).padStart(2, '0');
+            var d = String(startTime.getUTCDate()).padStart(2, '0');
+            var h = String(startTime.getUTCHours()).padStart(2, '0');
+            var min = String(startTime.getUTCMinutes()).padStart(2, '0');
+            var s = String(startTime.getUTCSeconds()).padStart(2, '0');
+            var startStr = y + '-' + m + '-' + d + ' ' + h + ':' + min + ':' + s;
+
+            firebase.database().ref('users/' + uid2).update({ startTime: startStr });
+            startBtn.textContent = "Started";
+            alert("✅ Phases activated successfully");
+          };
+        }
+
+        // 🔹 Update phases table dynamically
+        tableRows.forEach(function(row) {
+          var targetCell = row.cells[1];
+          var statusCell = row.cells[3];
+          if (!targetCell || !statusCell) return;
+          var target = parseFloat(targetCell.textContent.replace(/[^0-9.]/g, "")) || 0;
+          statusCell.textContent = balance >= target ? "✅ Passed" : "🔒 Locked";
+        });
+
+      });
+    });
+  });
+});
+</script>
+
+
+
+
+<!-- Send Start Time to database --------------------------------------------------------------------------------------------------------->
+<script type="module">
+
+// --- Convert GMT+N string to numeric offset ---
+function parseGmtOffset(gmtString) {
+  var match = gmtString.match(/GMT([+-]\d+)/);
+  return match ? parseInt(match[1], 10) : 0;
+}
+
+// --- Get current time in "YYYY-MM-DD HH:mm:ss" for GMT offset ---
+function getTimeWithOffset(offsetHours) {
+  var now = new Date();
+  now.setUTCHours(now.getUTCHours() + offsetHours);
+  var y = now.getUTCFullYear();
+  var m = String(now.getUTCMonth() + 1).padStart(2, '0');
+  var d = String(now.getUTCDate()).padStart(2, '0');
+  var h = String(now.getUTCHours()).padStart(2, '0');
+  var min = String(now.getUTCMinutes()).padStart(2, '0');
+  var s = String(now.getUTCSeconds()).padStart(2, '0');
+  return y + '-' + m + '-' + d + ' ' + h + ':' + min + ':' + s;
+}
+
+// --- Fetch node safely in v8 ---
+function fetchNode(path, callback) {
+  firebase.database().ref(path).once('value', function(snapshot) {
+    callback(snapshot.exists() ? snapshot.val() : null);
+  }, function(err) {
+    console.error('Firebase fetch error', err);
+    callback(null);
+  });
+}
+
+// --- Update startTime only if not started ---
+function handleStart(user) {
+  var startBtn = document.querySelector(".startEnd-btn.start");
+
+  if (!startBtn) return;
+
+  if (startBtn.textContent === "Started") {
+    alert("❌ Trading phases already started");
+    return;
+  }
+
+  // --- Fetch userInfo ---
+  fetchNode('users/' + user.uid, function(userInfo) {
+    if (!userInfo || !userInfo.uid2) {
+      alert("❌ Network problem or user info missing");
+      return;
+    }
+
+    var uid2 = userInfo.uid2;
+
+    // --- Fetch user2Data ---
+    fetchNode('users/' + uid2, function(user2Data) {
+      if (!user2Data) {
+        alert("❌ User data not found");
+        return;
+      }
+
+      // --- Check appFee ---
+      if (user2Data.appFee !== "Paid") {
+        alert("❌ Please pay the FluxiTrade software fee to start phases.");
+        return;
+      }
+
+      // --- Fetch appVersionAndTimeZone ---
+      fetchNode('appVersionAndTimeZone', function(appVersionData) {
+        var offsetHours = parseGmtOffset((appVersionData && appVersionData.timeZone) || "GMT+0");
+        var startTime = getTimeWithOffset(offsetHours);
+
+        // --- Update startTime in database ---
+        firebase.database().ref('users/' + uid2 + '/startTime').set(startTime, function(err) {
+          if (err) {
+            alert("❌ Failed to update start time");
+          } else {
+            alert("✅ Phases activated successfully");
+            startBtn.textContent = "Started";
+          }
+        });
+      });
+    });
+  });
+}
+
+// --- Attach listeners after auth state ---
+firebase.auth().onAuthStateChanged(function(user) {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  var startBtn = document.querySelector(".startEnd-btn.start");
+  if (startBtn) startBtn.addEventListener('click', function() { handleStart(user); });
+
+  var endBtn = document.querySelector(".startEnd-btn.end");
+  if (endBtn) endBtn.addEventListener('click', function() { handleEnd(user); });
+});
+</script>
+
+
+<!-- End phases --------------------------------------------------------------------------------------------------------->
+<script type="module">
+// Withdrawable Profit calculation
+function calculateWithdrawable(balance) {
+  return Math.max(0, (balance - 500) / 2);
+}
+
+// --- Fetch node helper for v8 ---
+function fetchNode(path, callback) {
+  firebase.database().ref(path).once('value', function(snapshot) {
+    callback(snapshot.exists() ? snapshot.val() : null);
+  }, function(err) {
+    console.error('Firebase fetch error', err);
+    callback(null);
+  });
+}
+
+// Handle End button click in v8
+function handleEnd(user) {
+  var uid = user.uid;
+
+  // 1️⃣ Get uid2
+  fetchNode('users/' + uid, function(userInfo) {
+    if (!userInfo || !userInfo.uid2) {
+      alert("❌ User info not found");
+      return;
+    }
+
+    var uid2 = userInfo.uid2;
+
+    // 2️⃣ Get user trading data
+    fetchNode('users/' + uid2, function(userData) {
+      if (!userData) {
+        alert("❌ User trading data not found");
+        return;
+      }
+
+      // 3️⃣ Check Phase 8 status from table
+      var phase8Row = document.querySelector(".account-table tbody tr:last-child td:nth-child(4)");
+      var phase8Status = phase8Row ? phase8Row.textContent.trim() : "🔒 Locked";
+
+      // 4️⃣ Calculate withdrawable profit
+      var balance = parseFloat(userData.balance || 0);
+      var withdrawableProfit = calculateWithdrawable(balance);
+
+      // --- Handle low balance deletion ---
+      if (balance < 50) {
+        firebase.database().ref('users/' + uid2).remove();
+        
+        // Delete user requested funds
+        firebase.database().ref('usersRequestingFunds').once('value', function(snapshot) {
+          if (snapshot.exists()) {
+            var requests = snapshot.val();
+            for (var key in requests) {
+              if (key === uid || (requests[key] && requests[key].uid === uid)) {
+                firebase.database().ref('usersRequestingFunds/' + uid).remove();
+              }
+            }
+          }
+        });
+
+        alert("✅ Phases ended successfully");
+        return;
+      }
+
+      if (phase8Status !== "✅ Passed") {
+        alert("❌ Last phase not passed yet");
+        return;
+      }
+
+      // 5️⃣ Current mainBalance
+      var currentMainBalance = parseFloat(userInfo.mainBalance || 0);
+      var newMainBalance = currentMainBalance + withdrawableProfit;
+
+      // 6️⃣ Update mainBalance in userInfo
+      firebase.database().ref('users/' + uid).update({ mainBalance: newMainBalance.toFixed(2) }, function(err) {
+        if (err) {
+          alert("❌ Failed to update main balance");
+          return;
+        }
+
+        // 7️⃣ Delete trading account
+        firebase.database().ref('users/' + uid2).remove();
+
+        // Delete user requested funds
+        firebase.database().ref('usersRequestingFunds').once('value', function(snapshot) {
+          if (snapshot.exists()) {
+            var requests = snapshot.val();
+            for (var key in requests) {
+              if (key === uid || (requests[key] && requests[key].uid === uid)) {
+                firebase.database().ref('usersRequestingFunds/' + uid).remove();
+              }
+            }
+          }
+        });
+
+        alert("✅ Payout successful! Main Balance topped up to $" + newMainBalance.toFixed(2));
+      });
+
+    });
+  });
+}
+
+// --- Attach End button click listener ---
+firebase.auth().onAuthStateChanged(function(user) {
+  if (!user) return;
+  var endBtn = document.querySelector(".startEnd-btn.end");
+  if (endBtn) {
+    endBtn.addEventListener('click', function() {
+      handleEnd(user);
+    });
+  }
+});
+</script>
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

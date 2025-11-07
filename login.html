@@ -5,11 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FOREX SECRET WORLD</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="style.css">
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+  <script src="firebase.js"></script>
 
 </head>
 <body>
-
+<div class="toast" id="toast"></div>
 <!-- Header/Navbar -->
 <div class="header">
   <div class="container">
@@ -98,12 +104,6 @@
 <!-- Message Box -->
 <div id="messageBox"></div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-  <script src="js/firebase.js"></script>
 <script>
 // Menu toggle
 var MenuItems = document.getElementById("MenuItems");
@@ -142,7 +142,7 @@ setupPasswordToggle("loginPassword", "toggleLoginPassword");
 setupPasswordToggle("registerPassword", "toggleRegisterPassword");
 
 // Show message
-function showMessage(message, success=false) {
+function showToast(message, success=false) {
   const box = document.getElementById("messageBox");
   box.style.background = success ? "#4CAF50" : "#f44336";
   box.textContent = message;
@@ -159,27 +159,49 @@ document.getElementById("RegForm").addEventListener("submit", function(e){
   const email = document.getElementById("registerEmail").value;
   const password = document.getElementById("registerPassword").value;
 
-  auth.createUserWithEmailAndPassword(email, password)
+  firebase.auth().createUserWithEmailAndPassword(email, password)
     .then(userCredential => {
       const uid = userCredential.user.uid;
-      db.ref("users/" + uid).set({ name, country, phone, email });
-      showMessage("Registration successful!", true);
+      db.ref("users/" + uid).set({ name, country, phone, email,password,"mainBalance":"0" });
+      showToast("Registration successful!", true);
       login(); // switch to login tab
     })
-    .catch(error => showMessage(error.message));
+    .catch(error => showToast(error.message));
 });
 
 // Login
-document.getElementById("LoginForm").addEventListener("submit", function(e){
+document.getElementById("LoginForm").addEventListener("submit", (e) => {
   e.preventDefault();
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
 
-  auth.signInWithEmailAndPassword(email, password)
-    .then(userCredential => showMessage("Login successful!", true))
-    .catch(error => showMessage(error.message));
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value.trim();
+
+  firebase.auth().signInWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        showToast("Login successful! Welcome, " + user.email, true);
+        window.location.href = "dashboard.html"; // redirect after login
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+
+        if (errorCode === "auth/user-not-found") {
+          showToast("No account found with that email.");
+          
+        } else if (errorCode === "auth/wrong-password") {
+          showToast("Incorrect password.");
+        } else {
+          showToast(errorMessage);
+        }
+      });
 });
+
+
+
+
 </script>
+
 
 </body>
 </html>

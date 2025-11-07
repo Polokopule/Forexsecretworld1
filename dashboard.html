@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FOREX SECRET WORLD</title>
+  <link rel="stylesheet" href="style.css">
+    <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+<script src="firebase.js"> </script> 
+</head>
+<body><div class="toast" id="toast"></div>
+  <div class="header">
+    <div class="container">
+      <div class="navbar">
+        <div class="logo">
+          <img src="logo2.png" width="155px">
+        </div>
+        <nav>
+          <ul id="MenuItems">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#" id="requestFundsLink">Request funds</a></li>
+            <li><a href="withdraw.html">Withdraw funds</a></li>
+            <li><a href="phases.html">View phases</a></li>
+            <li><a href="index.html">Logout</a></li>
+          </ul>
+        </nav>
+        <img src="menue.png" class="menue-icon" onclick="menutoggle()">
+      </div>
+
+      <!-- Dashboard -->
+      <div class="row">
+        <div class="col-2 dashboard">
+          <h1>Client Dashboard</h1>
+          <div class="balance-card">
+            <h2>Main Balance: <span id="mainBalance">$0.00</span></h2>
+            <p>Name: <span id="userName">Loading...</span></p>
+          </div>
+
+
+<!-- Account Table inside scrollable container -->
+<div class="table-container">
+  <table class="account-table" border="1" cellspacing="0" cellpadding="8">
+    <thead>
+      <tr>
+        <th>Account</th>
+        <th>Balance</th>
+        <th>Phases</th>
+        <th>Password</th>
+        <th>Software fee status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          123456789 <br>
+          ForexSecretWorld
+        </td>
+        <td>$0.00</td>
+        <td>
+          <button id="viewBtn" class="btn-action view">View</button>
+        </td>
+        <td>
+          <input type="password" value="huy4528hgy" id="passwordField" readonly>
+          <button id="toggleBtn" onclick="togglePassword()" style="border:none; background:none; cursor:pointer;">
+          👁️
+          </button>
+        </td>
+        <td>Unpaid</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+
+          <!-- Buttons BELOW the table -->
+          <div class="action-buttons">
+            <button class="btn-action deposit" id="requestFundsBtn">Request funds</button>
+            <button class="btn-action withdraw" onclick="window.location.href='withdraw.html'">Withdraw funds</button>
+                      </div>
+
+<!-- Platforms Table inside scrollable container -->
+<div class="table-container">
+  <table class="account-table" border="1" cellspacing="0" cellpadding="8">
+    <thead>
+      <tr>
+        <th>Platforms</th>
+        <th>Supported</th>
+        <th>Software Fee</th>
+        <th>Android version</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>MT4</td>
+        <td>❌</td>
+        <td>Free</td>
+        <td><button class="btn2-action download grey">Download</button></td>
+      </tr>
+      <tr>
+        <td>MT5</td>
+        <td>❌</td>
+        <td>Free</td>
+        <td><button class="btn2-action download grey">Download</button></td>
+      </tr>
+      <tr>
+        <td>FluxiTrade</td>
+        <td>✅</td>
+        <td><button class="btn2-action pay" onclick="window.location.href='pay.html'">Pay</button></td>
+        <td><button class="btn2-action download green" onclick="downloadApp()">Download</button></td>
+      </tr>
+      <tr>
+        <td>cTrader</td>
+        <td>❌</td>
+        <td>Free</td>
+        <td><button class="btn2-action download grey">Download</button></td>
+      </tr>
+      <tr>
+        <td>TradingView</td>
+        <td>❌</td>
+        <td>Free</td>
+        <td><button class="btn2-action download grey">Download</button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+          <!-- Terms and Conditions -->
+          <div class="terms-section" style="margin-top:20px;">
+            <p><strong>Terms and Conditions</strong></p>
+            <p>
+              Participants in this proprietary trading program agree to the following terms and conditions: 
+              Traders who successfully reach the final phase and achieve the minimum required profit target 
+              from the market are entitled to a 50/50 profit share arrangement with the firm. The maximum 
+              leverage available is 1:1000; however, leverage may be reduced during major news events to 
+              encourage proper risk management, while still allowing greater profit opportunities. Each 
+              funding contract is valid for a period of 30 days and has a minimum funding of $500. Traders 
+              can be granted more than $500 depending on a trader's perfomance, only trading within London
+              and New York sessions is permitted only on this time interval (09:00 AM to 00:00 AM, Time zone: GMT+3 ),
+              all opened positions beyond this time interval will be closed automatically. If a trader fails 
+              to meet the minimum profit target required in any phase, the funding contract will be 
+              terminated immediately. These conditions are designed to ensure fairness, encourage responsible 
+              trading practices, maintain the integrity of the program, and long-term success.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="footer-col-1">
+          <img src="logo2.png">
+        </div>
+        <div class="footer-col-2">
+          <p>Our purpose is to make sure that some traders, those who are lucky become successful.</p>
+        </div>
+      </div>
+    </div>
+    <hr>
+    <p class="copyright">Copyright 1988-2025 : Forex secret world</p>
+  </div>
+
+<script>
+  var MenuItems = document.getElementById("MenuItems");
+  var menuBtn = document.querySelector(".menue-icon");
+
+  // Initially collapse menu
+  MenuItems.style.maxHeight = "0px";
+
+  // Toggle menu on button click
+  function menutoggle() {
+    if (MenuItems.style.maxHeight === "0px") {
+      MenuItems.style.maxHeight = MenuItems.scrollHeight + "px"; // dynamic height
+    } else {
+      MenuItems.style.maxHeight = "0px";
+    }
+  }
+
+  // Close menu if user clicks outside
+  document.addEventListener("click", function(event) {
+    if (!MenuItems.contains(event.target) && !menuBtn.contains(event.target)) {
+      MenuItems.style.maxHeight = "0px";
+    }
+  });
+</script>
+
+<script>
+function togglePassword() {
+  const pwdField = document.getElementById("passwordField");
+  const btn = document.getElementById("toggleBtn");
+
+  if (pwdField.type === "password") {
+    pwdField.type = "text";     // show password
+    btn.textContent = "🙈";     // change to money face
+  } else {
+    pwdField.type = "password"; // hide password
+    btn.textContent = "👁️";    // change back to eye
+  }
+}
+</script>
+
+
+<!-- fetched user info (replace with your DB data) --------------------------------------------------------------------------------------------------------->
+
+<script >
+const viewBtn = document.getElementById("viewBtn");
+
+// 🔹 Watch login state
+firebase.auth().onAuthStateChanged(async (user) => {
+  if (user) {
+    const uid = user.uid;
+    const userRef = firebase.database().ref("users/" + uid);
+
+    try {
+      const snapshot = await userRef.once("value");
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+
+        // ✅ Update HTML elements
+        document.getElementById("userName").textContent = userData.name || "Loading...";
+        document.getElementById("mainBalance").textContent = `$${userData.mainBalance || "0.00"}`;
+      } else {
+       showToast("No user data found");
+        const snapshot = await userRef.once("value");
+console.log("User data:", snapshot.val());
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  } else {
+    // 🔹 Not logged in → send back to login
+    window.location.href = "login.html";
+  }
+});
+</script>
+
+
+
+
+<script>
+  const menuLink = document.getElementById("requestFundsLink");
+  const btn = document.getElementById("requestFundsBtn");
+
+  // Handle redirect based on whether the user already requested funds
+  function handleRequestFunds(e, user) {
+    e.preventDefault();
+
+    const requestsRef = firebase.database().ref("usersRequestingFunds");
+
+    requestsRef.once("value")
+      .then((snapshot) => {
+        let hasRequest = false;
+
+        if (snapshot.exists()) {
+          const requests = snapshot.val();
+          for (const key in requests) {
+            if (key === user.uid || (requests[key] && requests[key].uid === user.uid)) {
+              hasRequest = true;
+              break;
+            }
+          }
+        }
+
+        // Redirect user depending on whether they already have a request
+        if (hasRequest) {
+          window.location.href = "status.html";
+        } else {
+          window.location.href = "request_funds.html";
+        }
+      })
+      .catch((err) => {
+        console.error("Error checking request status:", err);
+        showToast("Could not check request status. Please try again.");
+      });
+  }
+
+  // 🔹 Wait for auth state before attaching listeners
+  firebase.auth().onAuthStateChanged(function(user) {
+    if (!user) {
+      console.log("User not logged in yet");
+      return;
+    }
+
+    // Attach click handlers
+    menuLink.addEventListener("click", function(e) { handleRequestFunds(e, user); });
+    btn.addEventListener("click", function(e) { handleRequestFunds(e, user); });
+  });
+</script> 
+<!-- fetched trading account data --------------------------------------------------------------------------------------------------------->
+<script >
+  
+  // 🔹 Table body
+  const tbody = document.querySelector(".account-table tbody");
+  tbody.innerHTML = ""; // Clear previous rows
+
+ // 🔹 Load current user's data
+firebase.auth().onAuthStateChanged(async (user) => {
+  if (!user) {
+    tbody.innerHTML = "<tr><td colspan='5'>You are not logged in</td></tr>";
+    return;
+  }
+
+  try {
+    // Step 1: get uid2 from /userInfo/{uid}/uid2
+    const userInfoRef = firebase.database().ref("users/" + user.uid + "/uid2");
+    const userInfoSnapshot = await userInfoRef.once("value");
+
+    if (!userInfoSnapshot.exists()) {
+      tbody.innerHTML = "<tr><td colspan='5'>No user info found</td></tr>";
+      return;
+    }
+
+    const uid2 = userInfoSnapshot.val();
+
+    // Step 2: fetch user's data from /users/{uid2}
+    const userRef = firebase.database().ref("users/" + uid2);
+    const userSnapshot = await userRef.once("value");
+
+    if (!userSnapshot.exists()) {
+      tbody.innerHTML = "<tr><td colspan='5'>No trading account yet</td></tr>";
+      return;
+    }
+
+    const userData = userSnapshot.val();
+
+    // ✅ Check if the snapshot has valid fields
+    if (!userData || !userData.accountNumber) {
+      tbody.innerHTML = "<tr><td colspan='5'>No trading account yet</td></tr>";
+      return;
+    }
+
+    // Step 3: display the row (always use ForexSecretWorld as name)
+    const row = `
+      <tr>
+        <td>
+          ${userData.accountNumber} <br>
+          ForexSecretWorld
+        </td>
+        <td>$${Number(userData.balance).toFixed(2)}</td>
+        <td>
+          <button id="viewBtn" class="btn-action view">View</button>
+        </td>
+        <td>
+          <input type="password" value="${userData.accountPass}" id="password-${uid2}" readonly>
+          <button onclick="togglePassword('password-${uid2}')" style="border:none; background:none; cursor:pointer;">
+            👁️
+          </button>
+        </td>
+        <td>${userData.appFee}</td>
+      </tr>
+    `;
+    tbody.insertAdjacentHTML("beforeend", row);
+
+    
+  } catch (err) {
+    console.error("Error loading user data:", err);
+    tbody.innerHTML = "<tr><td colspan='5'>Error loading user data</td></tr>";
+  }
+});
+
+// 🔹 Toggle password visibility
+window.togglePassword = function (id) {
+  const field = document.getElementById(id);
+  field.type = (field.type === "password") ? "text" : "password";
+};;  
+</script>
+
+
+
+<!-- Download app --------------------------------------------------------------------------------------------------------->
+<script>
+  function downloadApp() {
+    // Create a temporary hidden link
+    const link = document.createElement('a');
+    link.href = 'app-release.apk';  // path to your APK file
+    link.download = 'app-release.apk'; // file name for saving
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+</script>
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

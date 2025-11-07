@@ -1,5 +1,4 @@
 
- 
   * {
   margin: 0;
   padding: 0;
@@ -48,27 +47,32 @@ p {
   justify-content: space-around;
 }
 /* Columns */
-.col-2 {
+.col-2,.col-6 {
   padding: 10px;
   flex-basis: 50%;
   min-width: 300px;
 }
-.col-2 img {
+.col-2,.col-6 img {
   max-width: 100%;
   padding: 50px 10px;
 }
 .col-2 h1 {
   margin: 25px 0;
 }
+.col-6 h4 {
+  margin: 25px 0;
+}
+
 .col-2 p {
   font-size: 18px;
   line-height: 20px;
   margin: 25px 0;
 }
 
+ 
 
 .small-container {
-  width: 96%;
+  width:min(90%);
   margin: auto;
   text-align: center;
 }
@@ -257,6 +261,7 @@ form input {
   padding: 10px auto;
 }
 
+.toast { position: fixed; top: 20px; right: 20px; background: #ff523b; color: white; padding: 10px 20px; border-radius: 5px; display: none; z-index: 9999; }
 
 form .btn {
   width: 94%;
@@ -501,7 +506,7 @@ body {
 
 /* Signup container */
 .signup-container {
-  max-width: 400px;
+ width: min(90%);
   margin: 50px auto;
   background: #fff;
   padding: 30px;

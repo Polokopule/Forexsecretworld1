@@ -1,3 +1,8 @@
+
+const toast = document.getElementById('toast');
+function showToast(message) { toast.textContent = message; toast.style.display = 'block'; setTimeout(() => toast.style.display='none',3000); }
+
+
 // /js/firebase.js
 const firebaseConfig = {
     apiKey: "AIzaSyBzysGJIiGLD17bb8_FrvOeDVqP9ogjfzw",
@@ -14,5 +19,36 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
+function showMessage(message, success = false) {
+  const box = document.getElementById("messageBox");
+  box.style.background = success ? "#4CAF50" : "#f44336"; // green for success, red for error
+  box.textContent = message;
+  box.style.display = "block";
+  setTimeout(() => {
+    box.style.display = "none";
+  }, 4000); // hide after 3 seconds
+}
+
+function showCustomConfirm(message) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("customConfirm");
+    const msg = document.getElementById("confirmMessage");
+    const yesBtn = document.getElementById("confirmYes");
+    const noBtn = document.getElementById("confirmNo");
+
+    msg.textContent = message;
+    modal.style.display = "flex";
+
+    yesBtn.onclick = () => {
+      modal.style.display = "none";
+      resolve(true);
+    };
+
+    noBtn.onclick = () => {
+      modal.style.display = "none";
+      resolve(false);
+    };
+  });
+}
 
 
